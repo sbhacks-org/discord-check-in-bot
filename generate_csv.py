@@ -7,39 +7,44 @@ hacker_info will be continually changed based on our needs
 expected values are crc, email
 """
 
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+import discord
 
+from db import *
+from entry import read_entries
 import pandas as pd
-import binascii
 
-# Use a service account
-cred = credentials.Certificate('sbhacks-viii-site-firebase-adminsdk-private-key.json')
-firebase_admin.initialize_app(cred)
 
-db = firestore.client()
+def generate_apps_csv(apps):
+    # writes a list of applications to results.csv
+    apps = filter_accepted(apps)  # filter for accepted apps
 
-hackers_ref = db.collection(u'hackers')
-docs = hackers_ref.stream()
+    # get relevant info
+    names = list(map(lambda app: app["fname"] + " " + app["lname"], apps.values()))
+    emails = list(map(lambda app: app["emailAddress"], apps.values()))
+    codes = list(apps.keys())
 
-# get accepted hackers
-hacker_info = [(doc.id, doc.to_dict()) for doc in docs]
-hacker_info = [hacker for hacker in hacker_info if hacker[1]['rating'] == '10']
+    # formatting
+    df = pd.DataFrame({"name": names, "email": emails, "check-in code": codes})
+    df.to_csv("data/results.csv")
+    print(df)
 
-# get relevant info
-names = [hacker[1]['fname'] + ' ' + hacker[1]['lname'] for hacker in hacker_info]
-emails = [hacker[1]['emailAddress'] for hacker in hacker_info]
-crc_codes = [binascii.crc32(hacker[0].encode('utf8')) for hacker in hacker_info]
 
-# formatting
-d = {
-    'name': names,
-    'email': emails,
-    'check-in code': crc_codes
-}
+def generate_entry_csv(entries):
+    # writes a list of manual entries to entries.csv
+    names = list(map(lambda entry: entry["name"], entries.values()))
+    roles = list(map(lambda entry: entry["role"], entries.values()))
+    codes = list(entries.keys())
 
-df = pd.DataFrame(d)
-df.to_csv('results.csv')
+    # formatting
+    df = pd.DataFrame({"name": names, "role": roles, "check-in code": codes})
+    df.to_csv("data/entries.csv")
+    print(df)
 
-print(df)
+
+if __name__ == "__main__":
+    db = connect_to_firestore()
+    apps = fetch_applications(db)
+    generate_apps_csv(apps)
+
+    entries = read_entries()
+    generate_entry_csv(entries)
