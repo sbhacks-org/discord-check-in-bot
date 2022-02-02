@@ -80,10 +80,16 @@ async def on_message(message):
     code = message.content.lower().strip()
     if code in apps:
         # if the code is in apps, give them a hacker role, and set their username
-        full_name = get_full_name(apps[code])
+        full_name = get_full_name(apps[code][0])
         await member.add_roles(roles["hacker"])
         await member.edit(nick=full_name)
+        
         # TODO: update the db entry to include that they checked in
+        db.collection('hackers').document(apps[code][1]).update({
+            'check-in': True,
+            'discord_name': message.author.id,
+        })
+
         print(
             f'User {message.author.id}, aka "{full_name}" ({message.author.name}) checked in successfully.',
             file=sys.stderr,
@@ -110,7 +116,7 @@ from timer import RepeatedTimer
 def reconnect():
     global db, apps
     print("Reconnecting to database.")
-    apps = fetch_applications(db)  # need to update regularly
+    apps = fetch_applications2(db)  # need to update regularly
 
 
 timer = RepeatedTimer(1000, reconnect)

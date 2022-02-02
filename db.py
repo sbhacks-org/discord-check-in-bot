@@ -29,6 +29,13 @@ def fetch_applications(db):
     assert len(docs) == len(apps)
     return apps
 
+def fetch_applications2(db):
+    # returns a dict of applications
+    docs = list(db.collection("hackers").stream())
+    apps = dict(map(lambda doc: (generate_code(doc.id), (doc.to_dict(), doc.id)), docs))
+    assert len(docs) == len(apps)
+    return apps
+
 
 def is_accepted(app):
     # returns if the application is accepted

@@ -7,8 +7,6 @@ hacker_info will be continually changed based on our needs
 expected values are crc, email
 """
 
-import discord
-
 from db import *
 from entry import read_entries
 import pandas as pd
