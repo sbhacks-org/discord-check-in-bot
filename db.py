@@ -41,10 +41,14 @@ def is_accepted(app):
     # returns if the application is accepted
     return app["rating"] == "10"
 
+def is_nonpriority(app):
+    # returns if the application is nonpriority
+    return "nonPriority" in app and app["nonPriority"]
+
 
 def filter_accepted(apps):
     # filters the dict of applications by accepted
-    return dict(filter(lambda item: is_accepted(item[1]), apps.items()))
+    return dict(filter(lambda item: is_accepted(item[1]) and is_nonpriority(item[1]), apps.items()))
 
 
 def get_full_name(app):
