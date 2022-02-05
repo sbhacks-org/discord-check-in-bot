@@ -17,7 +17,7 @@ def generate_apps_csv(apps):
     apps = filter_accepted(apps)  # filter for accepted apps
 
     # get relevant info
-    names = list(map(lambda app: app["fname"], apps.values()))
+    names = list(map(lambda app: get_full_name(app), apps.values()))
     emails = list(map(lambda app: app["emailAddress"], apps.values()))
     codes = list(apps.keys())
 
